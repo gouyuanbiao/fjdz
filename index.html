@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<style type="text/css">
+			*{
+				margin: 0px;
+				padding: 0px;
+			}
+			#box{
+				width: 470px;
+				height: 800px;
+				background:red;
+				margin:0 auto;
+				overflow:hidden;
+				position:relative;
+			}
+			#feiji{
+				width:50px;
+				height: 62px;
+				background: yellow;
+				position: absolute;
+				top: 710px;
+				left: 210px;
+			}
+			.zidan{
+				width: 6px;
+				height: 15px;
+				background:black;
+				position: absolute;
+			}
+			.diji{
+				width: 40px;
+				height: 30px;
+				position: absolute;
+				background: blue;
+			}
+			#over{
+				width: 470px;
+				height: 800px;
+				background: #ccc;
+				position:absolute;
+				top: 0px;
+				left: 0px;
+				text-align: center;
+				line-height: 800px;
+				font-size: 50px;
+				z-index:1;
+				display: none;
+			}
+			#jishu{
+				position: absolute;
+				top: 20px;
+				left: 20px;
+				font-size: 25px;
+				z-index: 2;
+			}		
+		</style>
+	</head>
+	<body>
+		<div id="box">
+			<div id="feiji"></div>
+			<div id="jishu">得分:0</div>
+			<div id="over">
+				失败
+			</div>
+		</div>
+	</body>
+</html>
+<script type="text/javascript">
+var box=document.getElementById("box");	
+var feiji=document.getElementById("feiji");		
+var jishu=document.getElementById("jishu");	
+var over=document.getElementById("over");		
+var n = 0;
+	
+feiji.onmousedown=function(e){
+	var e = event||window.event;
+	posX = e.clientX-feiji.offsetLeft-box.offsetLeft;
+	posY= e.clientY-feiji.offsetTop-box.offsetTop;
+	console.log(posX,posY);
+	document.onmousemove = function(e){
+		var e = event||window.event;
+		feijiX = e.clientX-box.offsetLeft-posX;
+		feijiY = e.clientY-box.offsetTop-posY;
+		if(feijiX<0){ feijiX=0}
+		if(feijiY<0){ feijiY=0}
+		if(feijiX>420){feijiX=420}
+		if(feijiY>738){feijiY=738}
+		feiji.style.top = feijiY+"px"
+		feiji.style.left= feijiX+"px" 
+	}	
+}
+document.onmouseup=function(){
+	document.onmousemove = null;
+}
+
+//生产敌机
+var timesdiji = setInterval(function(){
+	var diji = document.createElement("div");
+	box.appendChild(diji);
+	diji.className="diji"
+	m = Math.floor(Math.random()*400)
+	diji.style.left = (35 + m)+"px"
+	diji.style.top = 30 +"px"
+	var timer = setInterval(function(){
+		diji.style.top = diji.offsetTop+8+"px";
+		if(diji.offsetTop > 800){
+			clearInterval(timer);
+			box.removeChild(diji)
+		}
+	},50)
+},300)
+	
+	
+//创建子弹	
+var timerzidan = setInterval(function(){
+	var zidan = document.createElement("div");
+	box.appendChild(zidan);
+	zidan.className="zidan"
+	zidan.style.top =feiji.offsetTop- 15 +"px"
+	zidan.style.left =feiji.offsetLeft+22+"px";
+	var times=setInterval(function(){
+		zidan.style.top = zidan.offsetTop-2+"px";
+	    if(zidan.offsertTop<-20){
+	    	clearInterval(times);
+	    	box.removeChild(zidan)
+	    }
+	},1)    	
+},300)
+	
+	
+//封装碰撞过程	
+	       
+function crash(object1,object2){
+	var obj1_left=object1.offsetLeft;
+    var obj1_top=object1.offsetTop;
+	var obj1_right=object1.offsetLeft+object1.offsetWidth;
+    var obj1_bottom=object1.offsetTop+object1.offsetHeight;
+    var obj2_left = object2.offsetLeft;
+    var obj2_top=object2.offsetTop;
+	var obj2_right=object2.offsetLeft+object2.offsetWidth;
+    var obj2_bottom=object2.offsetTop+object2.offsetHeight;
+   if(obj1_top > obj2_bottom){
+     	return false;
+    }else if(obj1_bottom < obj2_top){
+    	return false;
+    }else if(obj1_left > obj2_right){
+    	return false;
+    }else if(obj1_right < obj2_left){
+    	return false;
+    }else{
+    	return true;
+    }
+}
+	
+	
+//子弹和敌机的检测	
+var air_timer=setInterval(function(){
+	var diji=document.getElementsByClassName("diji");
+	var zidan=document.getElementsByClassName("zidan");
+	for(var i=0;i<diji.length;i++){
+		for(var j=0;j<zidan.length;j++){
+			if(crash(diji[i],zidan[j])){
+				  box.removeChild(diji[i])
+				  box.removeChild(zidan[j])
+				  n = n + 1;
+				  jishu.innerHTML="得分:"+n;
+				  break;
+			}
+		}
+	}	
+},1)
+
+
+//飞机和敌机的碰撞
+var ji_timer=setInterval(function(){
+	var diji=document.getElementsByClassName("diji");
+	for(var i=0;i<diji.length;i++){
+		if(crash(feiji,diji[i])){
+			box.removeChild(diji[i]);
+			clearInterval(timesdiji)
+			clearInterval(timerzidan)
+			over.style.display="block"
+		}
+	}
+},1)
+	
+	
+	
+	
+</script>
